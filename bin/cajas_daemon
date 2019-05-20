@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+#   Cajas Daemon - watch for changing files in `src/Template` JS files
+#
+#   @link https://github.com/xv1t/cakephp-cajas
+#
+echo "Start Cajas Daemon";
+
+SRC_DIR="./src/Template"
+
+inotifywait -e close_write --format '%w %f' -m -r $SRC_DIR |\
+(
+    while read
+    do
+        DIR=$(echo $REPLY | cut -f 1 -d' ')  
+        FILE=$(echo $REPLY | cut -f 2 -d' ')  
+        FULL_NAME=$DIR$FILE
+        if [[ $FULL_NAME == *.js ]]; then
+            echo "Changed: $FULL_NAME"
+            ./bin/cake cajas build $FULL_NAME
+        fi
+    done
+)
